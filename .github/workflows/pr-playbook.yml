@@ -1,0 +1,53 @@
+name: pr-playbook-run
+
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  pull_request:
+    # branches:
+    #   - 'fortimanager_2*'
+    types:
+      - opened
+      - edited
+
+
+
+
+  # workflow_dispatch:
+  #   inputs:
+  #     PR_branch:
+  #       description: 'Branch targeted by the PR'
+  #       default: 'fortimanager' # main 'normally'
+  #       required: false
+  #       type: string
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+
+jobs:
+    pr-playbook-run:
+        if: ${{ startsWith(github.head_ref,'botFMG_*') }}
+        runs-on: ubuntu-latest 
+        #${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
+        # needs: job_check_status
+        # env:
+        # PR_BRANCH: ${{ github.event.inputs.PR_branch }}
+
+
+        steps:
+
+
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
+
+        - name: Install packages
+            #if: ${{ needs.job_check_status.outputs.file_changed }} == 'true'
+          run: |
+            cd ${{ github.workspace }}
+            ls -lah
+            echo ' I am here' pwd
+            # ./scripts/install_packages.sh
