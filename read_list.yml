@@ -1,0 +1,31 @@
+---
+- name: Reading list
+  hosts: lab
+  gather_facts: no
+  tasks:
+    # - name: Load group data from the YAML file
+    #   include_vars:
+    #     file: groups.yaml
+    #     name: group_data
+
+    - name: Read content from the group file
+      set_fact:
+        items: "{{ lookup('file', './groups.yaml') }}"
+        group_data: "{{ lookup('file', './groups.yaml') | from_yaml }}"
+    
+    - name: Print each group name and its members
+      debug:
+        var:  "{{ group_data }}"
+        # msg: "Group name: {{ item.groupname }} | Members: {{ item.members | join(', ') }}"
+      # loop: "{{ group_data }}"
+
+    # - name: read file split
+    #   debug:
+    #     # var: "{{ items }}"
+    #     msg: "{{ item.groupname }}"
+    #   loop: "{{ items | list }}"
+
+    - name: Print each group name and its members
+      debug:
+        msg: "Group name: {{ item.groupname }} | Members: {{ item.members  }}"
+      loop: "{{ group_data }}"
