@@ -1,6 +1,7 @@
 Hostname,Ip,Group
-frontend,192.168.100.21,web
+frontend,192.168.100.22,web
 server1,192.168.100.22,web
 backend,10.10.168.31\24,data
 server3,192.168.100.21\20,db
-server5,10.10.168.21\24,data
+server5,10.10.168.20\24,data
+server5,10.10.168.21\22,bigdata
