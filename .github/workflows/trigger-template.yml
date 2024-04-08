@@ -9,18 +9,6 @@ on:
     paths:
         - '**.csv'
 
-
-  # workflow_dispatch:
-  #   inputs:
-  #     PR_branch:
-  #       description: 'Branch targeted by the PR'
-  #       default: 'main'
-  #       required: true
-  #       type: string
-
-
-
-
 permissions:
   id-token: write
   contents: write
@@ -28,7 +16,6 @@ permissions:
 
 
 jobs:
-
 
   trigger-template:
     runs-on: ubuntu-latest
@@ -51,7 +38,7 @@ jobs:
         id: status_changed
         shell: bash
         run: |
-            c
+            
             if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
                 echo "Changes detected in sample_ip.csv"
                 echo "file_changed=true" >> $GITHUB_OUTPUT
@@ -59,6 +46,18 @@ jobs:
               echo "No changes detected in sample_ip.csv"
               echo "file_changed=false" >> $GITHUB_OUTPUT
             fi
+
+            
+      - name: Process Changed CSV Files
+        run: |
+          files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep '\.csv$')
+          for file in $files_changed; do
+            echo "Processing $file..."
+            # Placeholder for processing script, e.g., validation, linting, or custom scripts
+            # ./process-csv.sh "$file"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name:  create new PR for Validation
       #   if: steps.status_changed.outputs.file_changed == 'true'
