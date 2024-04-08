@@ -46,7 +46,20 @@ jobs:
             files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
            
             echo -e "\n Files Changed: $files_changed"
-      
+       
+      - name: Check for Changes in cvs Files
+        id: status_changed
+        shell: bash
+        run: |
+            c
+            if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
+                echo "Changes detected in sample_ip.csv"
+                echo "file_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes detected in sample_ip.csv"
+              echo "file_changed=false" >> $GITHUB_OUTPUT
+            fi
+
       # - name:  create new PR for Validation
       #   if: steps.status_changed.outputs.file_changed == 'true'
       #   env:
