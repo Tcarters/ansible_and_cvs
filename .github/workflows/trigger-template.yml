@@ -6,9 +6,7 @@ on:
   pull_request:
     branches: [ "master" ]
     types: [opened, edited, reopened]
-    paths:
-        - '**.csv'
-
+   
 permissions:
   id-token: write
   contents: write
