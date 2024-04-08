@@ -8,7 +8,7 @@ on:
     #   - 'fortimanager_2*'
     types:
       - opened
-      - edited
+      # - edited
 
 
 
