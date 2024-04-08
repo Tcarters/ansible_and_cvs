@@ -1,12 +1,19 @@
 name: trigger-template
 
-
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   pull_request:
     branches: [ "master" ]
     types: [opened, edited, reopened]
-   
+
+  # workflow_dispatch:
+  #   inputs:
+  #     PR_branch:
+  #       description: 'Branch targeted by the PR'
+  #       default: 'main'
+  #       required: true
+  #       type: string
+
 permissions:
   id-token: write
   contents: write
@@ -69,8 +76,3 @@ jobs:
                 #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
                 gh pr create --base ${{ github.base_ref}} --title "IP GROUP auto update process" --body "See changed files for details"  
             fi
-
-
-     
-
-
