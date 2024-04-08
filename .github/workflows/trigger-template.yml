@@ -67,7 +67,7 @@ jobs:
                 git config user.name "secops-ipgroup-management"
                 git config user.email "<>"
                 newBranch=botFMG_$(date +"%d-%m-%Y_%H_%M")
-                git checkout -b $newBranch
+                git checkout $newBranch
                 #git commit -am "automated FMG ip group update"
                 git add *.csv
                 ls -lha
