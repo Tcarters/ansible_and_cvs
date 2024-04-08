@@ -9,6 +9,8 @@ on:
     types:
       - opened
       - edited
+  schedule:
+        - cron:  '*/2 * * * *' # Runs every 4 hours
 
 
 
@@ -28,7 +30,7 @@ permissions:
 
 jobs:
     pr-playbook-run:
-        if: ${{ startsWith(github.head_ref,'botFMG_*') }}
+        if: ${{ startsWith(github.head_ref,'botFMG_') }} || ${{ github.event_name == 'schedule' }}
         runs-on: ubuntu-latest 
         #${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
         # needs: job_check_status
