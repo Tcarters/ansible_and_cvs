@@ -60,9 +60,9 @@ jobs:
             # git status >> git.txt
             ls -lha;
             # cat git.txt
-            if [ $(git status --porcelain | wc -l) -eq "0" ]; then
-                echo "No changes detected."
-            else
+            # if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            #     echo "No changes detected."
+            # else
                 echo "Changes detected for new PR."
                 git config user.name "secops-ipgroup-management"
                 git config user.email "<>"
@@ -75,4 +75,4 @@ jobs:
                 git push --set-upstream origin $newBranch
                 #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
                 gh pr create --base ${{ github.base_ref}} --title "IP GROUP auto update process" --body "See changed files for details"  
-            fi
+            # fi
