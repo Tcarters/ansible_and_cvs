@@ -67,12 +67,12 @@ jobs:
                 git config user.name "secops-ipgroup-management"
                 git config user.email "<>"
                 newBranch=botFMG_$(date +"%d-%m-%Y_%H_%M")
-                git checkout $newBranch
+                git checkout -b $newBranch
                 #git commit -am "automated FMG ip group update"
-                git add *.csv
+                git add .
                 ls -lha
                 git commit -m 'automated ipgroup update'
                 git push --set-upstream origin $newBranch
                 #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
-                gh pr create --base ${{ github.base_ref}} --title "IP GROUP auto update process" --body "See changed files for details"  
+                gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
             # fi
