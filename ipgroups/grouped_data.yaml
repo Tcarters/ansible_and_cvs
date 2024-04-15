@@ -1,0 +1,20 @@
+- groupname: web
+  members:
+  - Hostname: frontend
+    IpAddress: 192.168.100.22\20
+  - Hostname: server1
+    IpAddress: 192.168.100.22\24
+- groupname: data
+  members:
+  - Hostname: backend
+    IpAddress: 10.10.168.31\24
+  - Hostname: server5
+    IpAddress: 10.10.168.20\24
+- groupname: db
+  members:
+  - Hostname: server3
+    IpAddress: 192.168.100.21\20
+- groupname: bigdata
+  members:
+  - Hostname: server5
+    IpAddress: 10.10.168.21\22

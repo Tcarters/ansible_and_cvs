@@ -1,0 +1,68 @@
+---
+- name: Reading list
+  hosts: lab
+  gather_facts: no
+  tasks:
+
+    - name: Find CSV files in the 'ipgroups' directory
+      find:
+        paths: "/home/hooper/ansible_area/ipgroups"
+        patterns: '*.csv'
+      register: csv_files
+    
+    - debug:
+        var: csv_files
+    
+    # - name: Display the content of each CSV file
+    #   shell: cat "{{ item.path }}"
+    #   loop: "{{ csv_files.files }}"
+    #   register: csv_content
+    #   ignore_errors: true
+
+    # - name: Print each file content
+    #   debug:
+    #     msg: "Content : {{ item.stdout }}"
+    #   loop: "{{ csv_content.results }}"
+    #   when: csv_content.results is defined
+   
+#### METHOD 2 DISPLAY CSV FILES USING 'read_csv' module
+    - name: display path of each files
+      debug:
+        msg: "Path is: {{item.path}}"
+      loop: "{{ csv_files.files }}"
+
+    - name: Create a list of all CSV file paths
+      set_fact:
+        listfiles: "{{ csv_files.files | map(attribute='path') | list }}"
+
+    - name: Display list of all file paths
+      debug:
+        var: listfiles
+
+
+    - name: Read and print each CSV file's contents using read_csv
+      read_csv:
+        path: "{{ item }}"
+      loop: "{{ listfiles }}"
+      register: csv_content
+      delegate_to: localhost
+
+    - debug: 
+        var: csv_content
+
+    - name: Display the content of each CSV file
+      debug:
+        var: filename.list
+      loop: "{{ csv_content.results}}"
+      loop_control:
+        loop_var: filename
+      when: filename is defined and filename.list is defined
+
+    # - name: Replace double backslashes
+    #   set_fact:
+    #      ip_address_fixed: "{{ item.IpAddress | replace('\\\\', '\\') }}"
+    #   loop: "{{ filename.list }}"
+    #   register: fixed_ips
+
+  
+    
