@@ -56,10 +56,7 @@ jobs:
         if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
         run: |
   
-              python --version
-    
-              cd fortimanager
-    
+              python --version    
               python3 ./convert_cvs_to_yaml.py
               echo -e '>>>>> new group Address: \n'
               cat ./groups.yaml
