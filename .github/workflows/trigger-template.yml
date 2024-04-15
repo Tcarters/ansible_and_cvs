@@ -52,27 +52,63 @@ jobs:
               echo "file_changed=false" >> $GITHUB_OUTPUT
             fi
 
+
+
       - name:  create new PR for Validation
         if: steps.status_changed.outputs.file_changed == 'true'
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            git status >> git.txt
-            ls -lha;
-            cat git.txt
-            if [ $(git status --porcelain | wc -l) -eq "0" ]; then
-                echo "No changes detected."
-            else
-                echo "Changes detected for new PR."
-                git config user.name "secops-ipgroup-management"
-                git config user.email "<>"
-                newBranch=botFMG_$(date +"%d-%m-%Y_%H_%M")
-                git checkout -b $newBranch
-                #git commit -am "automated FMG ip group update"
-                git add .
-                ls -lha
-                git commit -m 'automated ipgroup update'
-                git push --set-upstream origin $newBranch
-                #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
-                gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
-            fi
+  
+          echo "Changes detected, preparing to update branch."
+          git config user.name "secops-ipgroup-management"
+          git config user.email "your-email@example.com"
+          
+          # Check if the botFMG branch already exists
+          if git ls-remote --heads origin botFMG | grep -q 'botFMG'; then
+            echo "Branch botFMG already exists, checking it out and pulling the latest changes."
+            git fetch origin botFMG
+            git checkout botFMG
+            git pull origin botFMG
+          else
+            echo "Branch botFMG does not exist, creating it."
+            git checkout -b botFMG
+          fi
+      
+          # Add changes
+          git add *.csv
+          git commit -m 'Automated FMG ip group update'
+          
+          # Push updates
+          git push --set-upstream origin botFMG
+      
+          # Check if a pull request already exists for botFMG to master
+          PR_EXISTS=$(gh pr list --base master --head botFMG --json number -q ".[].number")
+          if [[ -z "$PR_EXISTS" ]]; then
+            echo "Creating a new pull request from botFMG to master."
+            gh pr create --base master --head botFMG --title "IP GROUP auto update process" --body "See changed files for details"
+          else
+            echo "A pull request already exists for botFMG to master (#$PR_EXISTS), no new PR created."
+          fi
+
+    
+            # git status >> git.txt
+            # ls -lha;
+            # cat git.txt
+            # if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            #     echo "No changes detected."
+            # else
+            #     echo "Changes detected for new PR."
+            #     git config user.name "secops-ipgroup-management"
+            #     git config user.email "<>"
+            #     newBranch=botFMG
+            #     #$(date +"%d-%m-%Y_%H_%M")
+            #     git checkout $newBranch
+            #     #git commit -am "automated FMG ip group update"
+            #     git add .
+            #     ls -lha
+            #     git commit -m 'automated ipgroup update'
+            #     git push --set-upstream origin $newBranch
+            #     #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
+            #     gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
+            # fi
