@@ -1,0 +1,14 @@
+- groupname: web
+  members:
+  - frontend
+  - server1
+- groupname: data
+  members:
+  - backend
+  - server5
+- groupname: db
+  members:
+  - server3
+- groupname: bigdata
+  members:
+  - server5
