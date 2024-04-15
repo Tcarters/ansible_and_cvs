@@ -74,14 +74,19 @@ jobs:
           # Check if the botFMG branch already exists
           if git ls-remote --heads origin botFMG | grep -q 'botFMG'; then
             echo "Branch botFMG already exists, checking it out and pulling the latest changes."
-            git fetch origin botFMG
-            git checkout botFMG
-            git pull origin botFMG
+            if git rev-parse --verify botFMG; then
+              git checkout botFMG
+              git reset --hard origin/master  # Reset branch to master's state
+            # git fetch origin botFMG
+            # git checkout botFMG
+            # git pull origin botFMG
           else
             echo "Branch botFMG does not exist, creating it."
             git checkout -b botFMG
           fi
-      
+          
+          git merge --no-ff ${{ github.head_ref }} -m "Merging changes from PR"
+
           # Add changes
           git add *
           git commit -m 'Automated FMG ip group update'
