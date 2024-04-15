@@ -52,7 +52,17 @@ jobs:
               echo "file_changed=false" >> $GITHUB_OUTPUT
             fi
 
-
+      - name: Generate Address group from csv file
+        if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
+        run: |
+  
+              python --version
+    
+              cd fortimanager
+    
+              python3 ./convert_cvs_to_yaml.py
+              echo -e '>>>>> new group Address: \n'
+              cat ./groups.yaml
 
       - name:  create new PR for Validation
         if: steps.status_changed.outputs.file_changed == 'true'
