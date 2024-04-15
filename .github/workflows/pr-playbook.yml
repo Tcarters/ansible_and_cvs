@@ -9,7 +9,7 @@ on:
     types:
       - opened
   schedule:
-        - cron:  '*/2 * * * *' # Runs every 4 hours
+        - cron:  '*/2 * * * *' # Runs every 2 minutes
 
 
 
