@@ -90,7 +90,8 @@ jobs:
           run: |
                 # Add commands to run your security tests here
                 echo "Running security tests..."
-                cat ./groups.yaml
+                ls -lhR
+                # cat ./groups.yaml
 
       
 
