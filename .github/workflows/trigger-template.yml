@@ -60,7 +60,22 @@ jobs:
               python3 ./convert_cvs_to_yaml.py
               echo -e '>>>>> new group Address: \n'
               cat ./groups.yaml
-
+      
+      # - name: Prepare branch for update
+      #   run: |
+      #     echo "Checking if botFMG branch exists..."
+      #     if git ls-remote --heads origin botFMG | grep -q 'refs/heads/botFMG'; then
+      #       echo "Branch botFMG exists, checking it out."
+      #       git fetch origin botFMG:botFMG
+      #       git checkout botFMG
+      #     else
+      #       echo "Branch botFMG does not exist, creating it from master."
+      #       git fetch origin master:master
+      #       git checkout -b botFMG origin/master
+      #     fi
+      #   shell: bash
+            
+      
       - name:  create new PR for Validation
         if: steps.status_changed.outputs.file_changed == 'true'
         env:
@@ -74,11 +89,11 @@ jobs:
           # Check if the botFMG branch already exists
           if git ls-remote --heads origin botFMG | grep -q 'botFMG'; then
             echo "Branch botFMG already exists, checking it out and pulling the latest changes."
-            if git rev-parse --verify botFMG; then
-              git checkout botFMG
-              git reset --hard origin/master  # Reset branch to master's state
-            fi
-            # git fetch origin botFMG
+            git fetch origin botFMG
+            # if git rev-parse --verify botFMG; then
+            git checkout botFMG
+            git reset --hard origin/master  # Reset branch to master's state
+            # fi
             # git checkout botFMG
             # git pull origin botFMG
           else
@@ -86,10 +101,14 @@ jobs:
             git checkout -b botFMG
           fi
 
-          git merge --no-ff ${{ github.head_ref }} -m "Merging changes from PR"
+          # Merging current PR changes into botFMG branch
+          git fetch origin ${{ github.head_ref }}
+          git merge --no-ff origin/${{ github.head_ref }} -m "Merging changes from PR"
+      
+          # git merge --no-ff ${{ github.head_ref }} -m "Merging changes from PR"
 
           # Add changes
-          git add *
+          git add .
           git commit -m 'Automated FMG ip group update'
           
           # Push updates
