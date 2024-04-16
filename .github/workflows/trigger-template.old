@@ -1,0 +1,154 @@
+name: trigger-template
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  pull_request:
+    branches: [ "master" ]
+    types: [opened, edited, reopened]
+
+  # workflow_dispatch:
+  #   inputs:
+  #     PR_branch:
+  #       description: 'Branch targeted by the PR'
+  #       default: 'main'
+  #       required: true
+  #       type: string
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+
+jobs:
+
+  trigger-template:
+    runs-on: ubuntu-latest
+    # ${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Check for all Files Changes
+        run: |
+            git fetch
+            echo 'executing git diff'
+            git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs
+            files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
+           
+            echo -e "\n Files Changed: $files_changed"
+       
+      - name: Check for Changes in cvs Files
+        id: status_changed
+        shell: bash
+        run: |
+            
+            if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
+                echo "Changes detected in sample_ip.csv"
+                echo "file_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes detected in sample_ip.csv"
+              echo "file_changed=false" >> $GITHUB_OUTPUT
+            fi
+
+      - name: Generate Address group from csv file
+        if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
+        run: |
+  
+              python --version    
+              python3 ./convert_cvs_to_yaml.py
+              echo -e '>>>>> new group Address: \n'
+              cat ./groups.yaml
+      
+      # - name: Prepare branch for update
+      #   run: |
+      #     echo "Checking if botFMG branch exists..."
+      #     if git ls-remote --heads origin botFMG | grep -q 'refs/heads/botFMG'; then
+      #       echo "Branch botFMG exists, checking it out."
+      #       git fetch origin botFMG:botFMG
+      #       git checkout botFMG
+      #     else
+      #       echo "Branch botFMG does not exist, creating it from master."
+      #       git fetch origin master:master
+      #       git checkout -b botFMG origin/master
+      #     fi
+      #   shell: bash
+            
+      
+      - name:  create new PR for Validation
+        if: steps.status_changed.outputs.file_changed == 'true'
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+  
+          echo "Changes detected, preparing to update branch."
+          git config user.name "secops-ipgroup-management"
+          git config user.email "your-email@example.com"
+          
+          # Handling untracked files or changes
+          git stash push --include-untracked -m "Stashing untracked files before switching branches"
+
+          
+          # Check if the botFMG branch already exists
+          if git ls-remote --heads origin botFMG | grep -q 'botFMG'; then
+            echo "Branch botFMG already exists, checking it out and pulling the latest changes."
+            git fetch origin botFMG
+            # if git rev-parse --verify botFMG; then
+            git checkout botFMG
+            git reset --hard origin/master  # Reset branch to master's state
+            # fi
+            # git checkout botFMG
+            # git pull origin botFMG
+          else
+            echo "Branch botFMG does not exist, creating it."
+            git checkout -b botFMG
+          fi
+
+          # Reapply the stashed changes if needed
+          git stash pop
+          
+
+          # Merging current PR changes into botFMG branch
+          git fetch origin ${{ github.head_ref }}
+          git merge --no-ff origin/${{ github.head_ref }} -m "Merging changes from PR"
+      
+          # git merge --no-ff ${{ github.head_ref }} -m "Merging changes from PR"
+
+          # Add changes
+          git add .
+          git commit -m 'Automated FMG ip group update'
+          
+          # Push updates
+          git push --set-upstream origin botFMG
+      
+          # Check if a pull request already exists for botFMG to master
+          PR_EXISTS=$(gh pr list --base master --head botFMG --json number -q ".[].number")
+          if [[ -z "$PR_EXISTS" ]]; then
+            echo "Creating a new pull request from botFMG to master."
+            gh pr create --base master --head botFMG --title "IP GROUP auto update process" --body "See changed files for details"
+          else
+            echo "A pull request already exists for botFMG to master (#$PR_EXISTS), no new PR created."
+          fi
+
+    
+            # git status >> git.txt
+            # ls -lha;
+            # cat git.txt
+            # if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            #     echo "No changes detected."
+            # else
+            #     echo "Changes detected for new PR."
+            #     git config user.name "secops-ipgroup-management"
+            #     git config user.email "<>"
+            #     newBranch=botFMG
+            #     #$(date +"%d-%m-%Y_%H_%M")
+            #     git checkout $newBranch
+            #     #git commit -am "automated FMG ip group update"
+            #     git add .
+            #     ls -lha
+            #     git commit -m 'automated ipgroup update'
+            #     git push --set-upstream origin $newBranch
+            #     #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
+            #     gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
+            # fi
