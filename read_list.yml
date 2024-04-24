@@ -3,10 +3,11 @@
   hosts: lab
   gather_facts: no
   tasks:
-    # - name: Load group data from the YAML file
-    #   include_vars:
-    #     file: groups.yaml
-    #     name: group_data
+
+    - name: Load group data from the YAML file
+      include_vars:
+        file: adoms.yml
+        dir: ./vars
 
     - name: Read content from the group file
       set_fact:

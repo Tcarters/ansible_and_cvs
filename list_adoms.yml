@@ -1,0 +1,63 @@
+---
+- name: Reading list
+  hosts: lab
+  gather_facts: no
+  # connection: httpapi
+
+  tasks:
+
+    - name: Load group data from the YAML file
+      include_vars:
+        # file: adoms.yml
+        dir: ./vars
+
+    - name: Display VDOMs for each ADOM and Package
+      debug:
+            msg: > 
+              "ADOM: {{ item.0.adomname }} ||  
+              Hostname: {{ item.0.devicename }} || 
+              Package: {{ item.1.name }}, VDOMs: {{ item.1.vdoms | join(';') }}"
+      loop: "{{ adoms | subelements('policy_packages') }}"
+      loop_control:
+        label: "{{ item.0.adomname }} - {{ item.1.name }}"
+
+    # - name: Detailed Display of each VDOM in each Package   NOT RECOMMENDED
+    #   debug:
+    #     msg: "ADOM: {{ adom_item.0.adomname }}, Package: {{ adom_item.1.name }}, VDOM: {{ vdom }}"
+    #   loop: "{{ adoms | subelements('policy_packages', {'skip_missing': True}) }}"
+    #   loop_control:
+    #     loop_var: adom_item
+    #     extended: yes
+    #   with_items: "{{ adom_item.1.vdoms }}"
+    #   loop_control:
+    #     loop_var: vdom
+    #     label: "{{ adom_item.1.name }} - VDOM: {{ vdom }}"
+
+    
+    - name: Display each VDOM in each Package
+      debug:
+        msg: "ADOM: {{ item.adomname }}, Hostname: {{ item.devicename }}, Package: {{ item.pkg.name }}, VDOM: {{ vdom }}"
+      vars:
+        package_details: "{{ adoms | json_query('[].{adomname: adomname, devicename: devicename, pkg: policy_packages}') }}"
+      loop: "{{ package_details | subelements('pkg') }}"
+      loop_control:
+        loop_var: item
+      with_items: "{{ item.1.vdoms }}"
+      # loop_control:
+      #   loop_var: vdom
+      #   label: "{{ item.1.name }} - VDOM: {{ vdom }}"
+
+    # - name: Install for policy package [preview mode] {{ ppkg }}
+    #   fortinet.fortimanager.fmgr_securityconsole_install_package:
+    #     securityconsole_install_package:
+    #       adom: "{{ adom_item.0.adomname }}"
+    #       flags:
+    #         - preview
+    #       pkg: "{{ adom_item.1.name }}"
+    #       scope:
+    #         - name: "{{ adom_item.0.devicename }}"
+    #           vdom: "{{ adom_item.1.vdoms}}"
+    #   loop: "{{ adoms | subelements('policy_packages') }}"
+    #   loop_control:
+    #     loop_var: adom_item
+        # label: "{{ item.0.adomname }} - {{ item.1.name }}"
