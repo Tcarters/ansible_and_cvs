@@ -1,0 +1,25 @@
+adoms:
+  
+  - adomname: root
+    devicename: 'device1'
+    policy_packages:
+      - name: root_package1
+        vdoms:
+          - adom1
+          - adom2
+          - fmg-adom
+
+      - name: root_package2
+        vdoms:
+          - adom4
+          - adom5
+          - fmg-adom2
+  
+  - adomname: fortigate1
+    devicename: 'device2'
+    policy_packages:
+      - name: package1
+        vdoms:
+          - adom1
+          - adom2
+          - fmg-adom

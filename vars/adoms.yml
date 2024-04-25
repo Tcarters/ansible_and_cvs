@@ -1,25 +1,28 @@
 adoms:
   
   - adomname: root
-    devicename: 'device1'
-    policy_packages:
-      - name: root_package1
+    devices:
+      - devicename: 'device1'
         vdoms:
-          - adom1
-          - adom2
-          - fmg-adom
-
-      - name: root_package2
+          - vdom_name: adom1
+            policy_pkg: package-adom1        
+          - vdom_name: adom2 
+            policy_pkg: package-adom2
+      
+      - devicename: 'device2'
         vdoms:
-          - adom4
-          - adom5
-          - fmg-adom2
+        - vdom_name:  adom3
+          policy_pkg: package-adom3 
   
   - adomname: fortigate1
-    devicename: 'device2'
-    policy_packages:
-      - name: package1
+    devices:    
+      - devicename: 'device3'
         vdoms:
-          - adom1
-          - adom2
-          - fmg-adom
+          - vdom_name: adom4
+            policy_pkg: package-adom4
+  #   policy_packages:
+  #     - name: package1
+  #       vdoms:
+  #         - adom1
+  #         - adom2
+  #         - fmg-adom
