@@ -1,0 +1,28 @@
+Initialize an empty dictionary `results`
+
+For each subfolder in the 'ipgroups' directory:
+    List all files in the subfolder
+    Create a temporary dictionary `file_pairs` to store filename bases as keys and file paths as values
+
+    For each file in subfolder:
+        Extract the file base name without extension
+        If base name exists in `file_pairs`:
+            Add the current file to the list under the base name
+        Else:
+            Initialize a new list under the base name in `file_pairs` with the current file
+
+    For each base name, filename pair in `file_pairs`:
+        If the list contains both a YAML file and a CSV file:
+            Set `yaml_file` to the YAML file path
+            Set `csv_file` to the CSV file path (the group name is the base name)
+
+            Parse `yaml_file`:
+                Load YAML content
+                For each device entry in YAML:
+                    Extract `adomname`
+                    If (`adomname`, base name) not in `results`:
+                        Initialize (`adomname`, base name) in `results` with details
+                    Else:
+                        Update existing entry with additional details or count
+
+Output `results`

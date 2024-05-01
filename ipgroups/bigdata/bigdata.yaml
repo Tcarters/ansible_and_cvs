@@ -1,0 +1,9 @@
+devices:
+- adom: adom-bigdata
+  devicename: bigdata
+  policy_pkg: policy1-bigdata-LAB
+  vdom: vdom-bigdata
+- adom: adom2-bigdata
+  devicename: bigdata-2
+  policy_pkg: policy2-bigdata-LAB
+  vdom: vdom2-bigdata
