@@ -38,8 +38,16 @@ jobs:
             files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
            
             echo -e "\n Files Changed: $files_changed"
+      
+      - name: Check for only CSV Files Changes
+        run: |
+          echo 'Executing git diff to find changes...'
+          git fetch --depth=1
+          CSV_FILES_CHANGED=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+          echo "CSV Files Changed in ipgroups folder:"
+          echo "$CSV_FILES_CHANGED"
        
-      - name: Check for Changes in cvs Files
+      - name: Check for Changes in one cvs Files
         id: status_changed
         shell: bash
         run: |
@@ -52,47 +60,43 @@ jobs:
               echo "file_changed=false" >> $GITHUB_OUTPUT
             fi
 
-      - name: Generate Address group from csv file
-        if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
-        run: |
+  #     - name: Generate Address group from csv file
+  #       if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
+  #       run: |
   
-            python --version    
-            python3 ./convert_cvs_to_yaml.py
-            echo -e '>>>>> new group Address: \n'
-            cat ./groups.yaml
+  #           python --version    
+  #           python3 ./convert_cvs_to_yaml.py
+  #           echo -e '>>>>> new group Address: \n'
+  #           cat ./groups.yaml
             
-      - name:  create new PR for Validation
-        if: steps.status_changed.outputs.file_changed == 'true'
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+  #     - name:  create new PR for Validation
+  #       if: steps.status_changed.outputs.file_changed == 'true'
+  #       env:
+  #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       run: |
   
-          echo "Changes detected, preparing to update branch."
-          git config user.name "secops-ipgroup-management"
-          git config user.email "your-email@example.com"
+  #         echo "Changes detected, preparing to update branch."
+  #         git config user.name "secops-ipgroup-management"
+  #         git config user.email "your-email@example.com"
 
-          git fetch origin
-          git checkout -B botFMG origin/botFMG || git checkout -b botFMG
-          git reset --hard ${{ github.event.pull_request.head.sha }}
-          git push -f origin botFMG
+  #         git fetch origin
+  #         git checkout -B botFMG origin/botFMG || git checkout -b botFMG
+  #         git reset --hard ${{ github.event.pull_request.head.sha }}
+  #         git push -f origin botFMG
 
 
-  tests_on_tower:
-    needs: trigger-template
-    runs-on: ubuntu-latest
-    steps:
-        - name: Checkout user branch
-          uses: actions/checkout@v4
-          with:
-            ref: 'botFMG'
+  # tests_on_tower:
+  #   needs: trigger-template
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #       - name: Checkout user branch
+  #         uses: actions/checkout@v4
+  #         with:
+  #           ref: 'botFMG'
                   
-        - name: Run security tests
-          run: |
-                # Add commands to run your security tests here
-                echo "Running security tests..."
-                ls -lhR
-                # cat ./groups.yaml
-
-      
-
-    
+  #       - name: Run security tests
+  #         run: |
+  #               # Add commands to run your security tests here
+  #               echo "Running security tests..."
+  #               ls -lhR
+  #               # cat ./groups.yaml
