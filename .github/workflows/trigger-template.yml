@@ -35,24 +35,32 @@ jobs:
           fetch-depth: 0  # Fetch all history for all branches and tags
 
 
-      - name: Check for CSV file changes
-        id: check_changes
-        run: |
-          # Determine the base commit to compare against
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          else
-            BASE_SHA="$(git rev-parse HEAD^1)"
-          fi
-          # List changed CSV files
-          CSV_FILES_CHANGED=$(git diff --name-only $BASE_SHA ${{ github.sha }} | grep 'ipgroups/.*\.csv')
-          echo "CSV_FILES_CHANGED=${CSV_FILES_CHANGED}" >> $GITHUB_ENV
+      # - name: Check for CSV file changes
+      #   id: check_changes
+      #   run: |
+      #     # Determine the base commit to compare against
+      #     if [ "${{ github.event_name }}" == "pull_request" ]; then
+      #       BASE_SHA="${{ github.event.pull_request.base.sha }}"
+      #     else
+      #       BASE_SHA="$(git rev-parse HEAD^1)"
+      #     fi
+      #     # List changed CSV files
+      #     CSV_FILES_CHANGED=$(git diff --name-only $BASE_SHA ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+      #     echo "CSV_FILES_CHANGED=${CSV_FILES_CHANGED}" >> $GITHUB_ENV
     
-      - name: Print Changed CSV Files
-        if: ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }} != ''
+      # - name: Print Changed CSV Files
+      #   if: ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }} != ''
+      #   run: |
+      #     echo "Changed CSV files:"
+      #     echo " Results:  ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }}"
+
+      - name: Check for only CSV Files Changes
         run: |
-          echo "Changed CSV files:"
-          echo " Results:  ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }}"
+          echo 'Executing git diff to find changes...'
+          git fetch --depth=1
+          CSV_FILES_CHANGED=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+          echo "CSV Files Changed in ipgroups folder:"
+          echo "$CSV_FILES_CHANGED"
 
       - name: Check for all Files Changes
         run: |
