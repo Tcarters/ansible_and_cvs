@@ -5,6 +5,8 @@ on:
   pull_request:
     branches: [ "master" ]
     types: [opened, edited, reopened]
+    paths: 
+      - 'ipgroups/**/*.csv'
 
   # workflow_dispatch:
   #   inputs:
@@ -29,6 +31,28 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+
+      - name: Check for CSV file changes
+        id: check_changes
+        run: |
+          # Determine the base commit to compare against
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="$(git rev-parse HEAD^1)"
+          fi
+          # List changed CSV files
+          CSV_FILES_CHANGED=$(git diff --name-only $BASE_SHA ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+          echo "CSV_FILES_CHANGED=${CSV_FILES_CHANGED}" >> $GITHUB_ENV
+    
+      - name: Print Changed CSV Files
+        if: ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }} != ''
+        run: |
+          echo "Changed CSV files:"
+          echo " Results:  ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }}"
 
       - name: Check for all Files Changes
         run: |
@@ -52,46 +76,47 @@ jobs:
               echo "file_changed=false" >> $GITHUB_OUTPUT
             fi
 
-      - name: Generate Address group from csv file
-        if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
-        run: |
+            echo "File cnaged is: $file_changed"
+      # - name: Generate Address group from csv file
+      #   if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
+      #   run: |
   
-            python --version    
-            python3 ./convert_cvs_to_yaml.py
-            echo -e '>>>>> new group Address: \n'
-            cat ./groups.yaml
+      #       python --version    
+      #       python3 ./convert_cvs_to_yaml.py
+      #       echo -e '>>>>> new group Address: \n'
+      #       cat ./groups.yaml
             
-      - name:  create new PR for Validation
-        if: steps.status_changed.outputs.file_changed == 'true'
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+      # - name:  create new PR for Validation
+      #   if: steps.status_changed.outputs.file_changed == 'true'
+      #   env:
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
   
-          echo "Changes detected, preparing to update branch."
-          git config user.name "secops-ipgroup-management"
-          git config user.email "your-email@example.com"
+      #     echo "Changes detected, preparing to update branch."
+      #     git config user.name "secops-ipgroup-management"
+      #     git config user.email "your-email@example.com"
 
-          git fetch origin
-          git checkout -B botFMG origin/botFMG || git checkout -b botFMG
-          git reset --hard ${{ github.event.pull_request.head.sha }}
-          git push -f origin botFMG
+      #     git fetch origin
+      #     git checkout -B botFMG origin/botFMG || git checkout -b botFMG
+      #     git reset --hard ${{ github.event.pull_request.head.sha }}
+      #     git push -f origin botFMG
 
 
-  tests_on_tower:
-    needs: trigger-template
-    runs-on: ubuntu-latest
-    steps:
-        - name: Checkout user branch
-          uses: actions/checkout@v4
-          with:
-            ref: 'botFMG'
+  # tests_on_tower:
+  #   needs: trigger-template
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #       - name: Checkout user branch
+  #         uses: actions/checkout@v4
+  #         with:
+  #           ref: 'botFMG'
                   
-        - name: Run security tests
-          run: |
-                # Add commands to run your security tests here
-                echo "Running security tests..."
-                ls -lhR
-                # cat ./groups.yaml
+  #       - name: Run security tests
+  #         run: |
+  #               # Add commands to run your security tests here
+  #               echo "Running security tests..."
+  #               ls -lhR
+  #               # cat ./groups.yaml
 
       
 
