@@ -1,0 +1,138 @@
+---
+- name: Reading list
+  hosts: lab
+  gather_facts: no
+  # connection: httpapi
+
+  tasks:
+
+    - name: Load group data from the YAML file
+      include_vars:
+        # file: adoms.yml
+        dir: ./vars
+
+    - name: Creating variables 
+      set_fact:
+        adom_names: "{{ adoms | map(attribute='adomname') | list }}"
+        list_Device: "{{ adoms | map(attribute='devices') | list }}"
+        list_devices: "{{ adoms | json_query('[].devices[]') }}"
+        list_deviceName: "{{ adoms | json_query('[].devices[]') | map(attribute='devicename')   }}"
+        listVdoms: "{{ adoms | json_query('[].devices[]') | map(attribute='vdoms') }}"
+
+
+
+        # list_adoms: "{{ item.adomname}}"
+        # list_Device: "{{ adom_item.devices }}"
+      # loop: "{{ adoms }}"
+      # loop_control:
+      #   loop_var: adom_item
+
+    - debug:
+        msg: > 
+          "{{ item }} and device {{ localdevices | map(attribute='devicename') }} AND Name: {{ localn}} }}
+            VDMOS {{ listVdoms }}
+            VDMOS_NAME: {{ localvdom_name }}"
+      vars:
+        - localdevices: "{{ list_devices}}"
+        - localn: "{{ list_deviceName }}"
+        - localvdom_name: "{{ listVdoms }}"
+      with_items:
+        - "{{ adom_names}}"
+    # "{{ list_adoms }}"
+      # loop: "{{ adoms }}"
+      # loop_control:
+      #   loop_var: adom_item
+
+
+    # - name: Display VDOM names for each device in each ADOM
+    #   debug:
+    #     msg: > 
+    #       "ADOM: {{ item.0.adomname }} ||
+    #        Device: {{ item.1.devicename }} ||
+    #        listVdoms: {{ item.1.vdoms }} "
+         
+    #   # loop: "{{ adoms }}"   
+    #   # VDOM Name: {{ item.1.vdom_name }}, 
+    #       # Policy Package: {{ item.policy_pkg }}"
+    #   with_subelements:
+    #     - "{{adoms}}"
+    #     -  devices
+        
+
+
+    # - name: Display VDOM names for each device in each ADOM
+    #   debug:
+    #     msg: "ADOM: {{ item.0.adomname }}, Device: {{ item.1.devicename }}, VDOM: {{ vdom.vdom_name }}"
+    #   loop: "{{ adoms | json_query(query) }}"
+    #   vars:
+    #     query: "[].devices[].{adomname: adomname, devicename: devicename, vdoms: vdoms}"
+    #   loop_control:
+    #     extended: yes
+    #   with_items: "{{ item.vdoms }}"
+    #   loop_control:
+    #     loop_var: vdom
+
+    # - name: Display VDOM names for each device in each ADOM
+    #   debug:
+    #     msg: "ADOM: {{ adom.adomname }}, Device: {{ device.devicename }}, VDOM: {{ vdom.vdom_name }}, Package: {{ vdom.policy_pkg }}"
+    #   loop: "{{ adoms | json_query('*.devices[*].vdoms[]') }}"
+    #   loop_control:
+    #     extended: yes
+    #     loop_var: vdom
+    #     # Use the parent data to access information about ADOM and device
+    #     index_var: index
+    #     label: "{{ adoms[index | int // adoms[0].devices | length].adomname }} - {{ adoms[index | int // adoms[0].devices | length].devices[index | int % adoms[0].devices | length].devicename }} - {{ vdom.vdom_name }}"
+    #   vars:
+    #     adom: "{{ adoms[index | int // adoms[0].devices | length] }}"
+    #     device: "{{ adoms[index | int // adoms[0].devices | length].devices[index | int % adoms[0].devices | length] }}"
+
+    # - name: Display VDOMs for each ADOM and Package
+    #   debug:
+    #         msg: > 
+    #           "ADOM: {{ item.0.adomname }} ||  
+    #           Hostname: {{ item.0.devicename }} || 
+    #           Package: {{ item.1.name }}, VDOMs: {{ item.1.vdoms | join(';') }}"
+    #   loop: "{{ adoms | subelements('policy_packages') }}"
+    #   loop_control:
+    #     label: "{{ item.0.adomname }} - {{ item.1.name }}"
+
+    # - name: Detailed Display of each VDOM in each Package   NOT RECOMMENDED
+    #   debug:
+    #     msg: "ADOM: {{ adom_item.0.adomname }}, Package: {{ adom_item.1.name }}, VDOM: {{ vdom }}"
+    #   loop: "{{ adoms | subelements('policy_packages', {'skip_missing': True}) }}"
+    #   loop_control:
+    #     loop_var: adom_item
+    #     extended: yes
+    #   with_items: "{{ adom_item.1.vdoms }}"
+    #   loop_control:
+    #     loop_var: vdom
+    #     label: "{{ adom_item.1.name }} - VDOM: {{ vdom }}"
+
+    
+    # - name: Display each VDOM in each Package
+    #   debug:
+    #     msg: "ADOM: {{ item.adomname }}, Hostname: {{ item.devicename }}, Package: {{ item.pkg.name }}, VDOM: {{ vdom }}"
+    #   vars:
+    #     package_details: "{{ adoms | json_query('[].{adomname: adomname, devicename: devicename, pkg: policy_packages}') }}"
+    #   loop: "{{ package_details | subelements('pkg') }}"
+    #   loop_control:
+    #     loop_var: item
+    #   with_items: "{{ item.1.vdoms }}"
+      # loop_control:
+      #   loop_var: vdom
+      #   label: "{{ item.1.name }} - VDOM: {{ vdom }}"
+
+    # - name: Install for policy package [preview mode] {{ ppkg }}
+    #   fortinet.fortimanager.fmgr_securityconsole_install_package:
+    #     securityconsole_install_package:
+    #       adom: "{{ adom_item.0.adomname }}"
+    #       flags:
+    #         - preview
+    #       pkg: "{{ adom_item.1.name }}"
+    #       scope:
+    #         - name: "{{ adom_item.0.devicename }}"
+    #           vdom: "{{ adom_item.1.vdoms}}"
+    #   loop: "{{ adoms | subelements('policy_packages') }}"
+    #   loop_control:
+    #     loop_var: adom_item
+        # label: "{{ item.0.adomname }} - {{ item.1.name }}"

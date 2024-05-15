@@ -6,10 +6,10 @@ on:
   pull_request:
     # branches:
     #   - 'fortimanager_2*'
-    types:
-      - opened
-  schedule:
-        - cron:  '*/2 * * * *' # Runs every 2 minutes
+    # types:
+    #   - opened
+  # schedule:
+  #       - cron:  '*/2 * * * *' # Runs every 2 minutes
 
 
 

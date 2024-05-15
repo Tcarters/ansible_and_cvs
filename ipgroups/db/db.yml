@@ -1,0 +1,9 @@
+devices:
+- adom: adom-db
+  devicename: db
+  policy_pkg: policy1-db-LAB
+  vdom: vdom-db
+- adom: adom2-db
+  devicename: db-2
+  policy_pkg: policy2-db-LAB
+  vdom: vdom2-db
