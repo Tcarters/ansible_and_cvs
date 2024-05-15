@@ -5,14 +5,9 @@ on:
   pull_request:
     branches: [ "master" ]
     types: [opened, edited, reopened]
+    paths:
+      - 'ipgroups/**/*.csv'
 
-  # workflow_dispatch:
-  #   inputs:
-  #     PR_branch:
-  #       description: 'Branch targeted by the PR'
-  #       default: 'main'
-  #       required: true
-  #       type: string
 
 permissions:
   id-token: write
@@ -29,6 +24,28 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+      
+      - name: Check for CSV file changes
+        id: check_changes
+        run: |
+          # Determine the base commit to compare against
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="$(git rev-parse HEAD^1)"
+          fi
+
+          # List changed CSV files
+          CSV_FILES_CHANGED=$(git diff --name-only $BASE_SHA ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+          echo "CSV_FILES_CHANGED=${CSV_FILES_CHANGED}" >> $GITHUB_ENV
+
+      - name: Print Changed CSV Files
+        if: ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }} != ''
+        run: |
+          echo "Changed CSV files:"
+          echo " Results:  ${{ steps.check_changes.outputs.CSV_FILES_CHANGED }}"
 
       - name: Check for all Files Changes
         run: |
@@ -39,40 +56,40 @@ jobs:
            
             echo -e "\n Files Changed: $files_changed"
        
-      - name: Check for Changes in cvs Files
-        id: status_changed
-        shell: bash
-        run: |
+      # - name: Check for Changes in cvs Files
+      #   id: status_changed
+      #   shell: bash
+      #   run: |
             
-            if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
-                echo "Changes detected in sample_ip.csv"
-                echo "file_changed=true" >> $GITHUB_OUTPUT
-            else
-              echo "No changes detected in sample_ip.csv"
-              echo "file_changed=false" >> $GITHUB_OUTPUT
-            fi
+      #       if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
+      #           echo "Changes detected in sample_ip.csv"
+      #           echo "file_changed=true" >> $GITHUB_OUTPUT
+      #       else
+      #         echo "No changes detected in sample_ip.csv"
+      #         echo "file_changed=false" >> $GITHUB_OUTPUT
+      #       fi
 
-      - name:  create new PR for Validation
-        if: steps.status_changed.outputs.file_changed == 'true'
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            git status >> git.txt
-            ls -lha;
-            cat git.txt
-            if [ $(git status --porcelain | wc -l) -eq "0" ]; then
-                echo "No changes detected."
-            else
-                echo "Changes detected for new PR."
-                git config user.name "secops-ipgroup-management"
-                git config user.email "<>"
-                newBranch=botFMG_$(date +"%d-%m-%Y_%H_%M")
-                git checkout -b $newBranch
-                #git commit -am "automated FMG ip group update"
-                git add .
-                ls -lha
-                git commit -m 'automated ipgroup update'
-                git push --set-upstream origin $newBranch
-                #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
-                gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
-            fi
+      # - name:  create new PR for Validation
+      #   if: steps.status_changed.outputs.file_changed == 'true'
+      #   env:
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #       git status >> git.txt
+      #       ls -lha;
+      #       cat git.txt
+      #       if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+      #           echo "No changes detected."
+      #       else
+      #           echo "Changes detected for new PR."
+      #           git config user.name "secops-ipgroup-management"
+      #           git config user.email "<>"
+      #           newBranch=botFMG_$(date +"%d-%m-%Y_%H_%M")
+      #           git checkout -b $newBranch
+      #           #git commit -am "automated FMG ip group update"
+      #           git add .
+      #           ls -lha
+      #           git commit -m 'automated ipgroup update'
+      #           git push --set-upstream origin $newBranch
+      #           #gh pr create --base ${{ env.BRANCH_NAME }} --title "IP GROUP auto update process" --label ${{ env.INPUT_ENV }} --body "See changed files for details"  
+      #           gh pr create --base master --title "IP GROUP auto update process" --body "See changed files for details"  
+      #       fi
