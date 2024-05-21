@@ -1,4 +1,4 @@
-name: trigger-template
+name: pr-input_tower
 
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -29,7 +29,7 @@ permissions:
 
 jobs:
 
-  trigger-template:
+  pr-input_tower:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.tower }}
     env:
@@ -105,7 +105,7 @@ jobs:
 
 
   # tests_on_tower:
-  #   needs: trigger-template
+  #   needs: pr-input_tower
   #   runs-on: ubuntu-latest
   #   steps:
   #       - name: Checkout user branch
