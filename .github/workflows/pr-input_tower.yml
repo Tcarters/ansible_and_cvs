@@ -1,54 +1,47 @@
 name: pr-input_tower
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   pull_request:
-    # branches: [ "master" ]
     types: [opened, edited]
 
   workflow_dispatch:
     inputs:
-        tower:
-            description: 'Tower AE | PROD'
-            type: choice
-            options:
-                - CAE
-                - PROD
-        
-        PR_branch:
-            description: 'Branch targeted by the PR'
-            default: 'master'
-            required: true
-            type: string
+      tower:
+        description: 'Tower CAE | PROD'
+        type: choice
+        options:
+          - CAE
+          - PROD
+      PR_branch:
+        description: 'Branch targeted by the PR'
+        default: 'master'
+        required: true
+        type: string
 
 permissions:
   id-token: write
   contents: write
   pull-requests: write
 
-
 jobs:
-
   pr-input_tower:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.tower }}
+    environment: ${{ github.event.inputs.tower || 'CAE' }}  # Default to CAE if no input
     env:
-        INPUT_USER_ENV: ${{ github.event.inputs.tower }}
-        PR_BRANCH: ${{ github.event.inputs.PR_branch }}
-        USER_API: ${{ vars.USER_API}}
-#         USER_API_VARS: ${{ vars.USER_API}}
-        USER_API_VARS: ${{ secrets.USER_API}}
-    # ${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
+      INPUT_USER_ENV: ${{ github.event.inputs.tower || 'CAE' }}  # Default to CAE if no input
+      PR_BRANCH: ${{ github.event.inputs.PR_branch }}
+      USER_API: ${{ vars.USER_API }}
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
       - name: Test Var in ENV
         run: | 
-            echo "This is the configured user: ${{ env.USER_API }}"
-            echo "This is the 2nd configured user: $USER_API_VARS"
-            echo "This is the branch: ${{ env.PR_BRANCH }}"
+          echo "This is the configured user: ${{ env.USER_API }}"
+          echo "This is the 2nd configured user: $USER_API"
+          echo "This is the branch ${{ env.PR_BRANCH }}"
+          echo "This is the environment: $INPUT_USER_ENV"
+
 
     #   - name: Check for all Files Changes
     #     run: |
