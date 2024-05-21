@@ -1,4 +1,4 @@
-name: trigger-template
+name: pr-input_tower
 
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -29,12 +29,14 @@ permissions:
 
 jobs:
 
-  trigger-template:
+  pr-input_tower:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.tower }}
     env:
         INPUT_USER_ENV: ${{ github.event.inputs.tower }}
         PR_BRANCH: ${{ github.event.inputs.PR_branch }}
+        USER_API: ${{ vars.USER_API}}
+#         USER_API_VARS: ${{ vars.USER_API}}
         USER_API_VARS: ${{ secrets.USER_API}}
     # ${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
 
@@ -44,7 +46,7 @@ jobs:
 
       - name: Test Var in ENV
         run: | 
-            echo "This is the configured user ${{ env.USER_API_VARS }}"
+            echo "This is the configured user ${{ env.USER_API }}"
             echo "This is the 2nd configured user $USER_API_VARS"
             echo "This is the branch ${{ env.PR_BRANCH }}"
 
@@ -104,7 +106,7 @@ jobs:
 
 
   # tests_on_tower:
-  #   needs: trigger-template
+  #   needs: pr-input_tower
   #   runs-on: ubuntu-latest
   #   steps:
   #       - name: Checkout user branch
