@@ -36,7 +36,8 @@ jobs:
         INPUT_USER_ENV: ${{ github.event.inputs.tower }}
         PR_BRANCH: ${{ github.event.inputs.PR_branch }}
         USER_API: ${{ secrets.USER_API}}
-        USER_API_VARS: ${{ vars.USER_API}}
+#         USER_API_VARS: ${{ vars.USER_API}}
+        USER_API_VARS: ${{ secrets.USER_API}}
     # ${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
 
     steps:
