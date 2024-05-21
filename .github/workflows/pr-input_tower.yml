@@ -42,7 +42,7 @@ jobs:
           echo "This is the branch ${{ env.PR_BRANCH }}"
           echo "This is the environment: $INPUT_USER_ENV"
 
-      # This step adds a label to the PR based on the 'INPUT_USER_ENV' value
+      # This step adds a label to the PR based on the 'INPUT_USER_ENV' value and sets the color
       - name: Add label to PR
         if: ${{ env.INPUT_USER_ENV != '' }}
         uses: actions/github-script@v6
@@ -51,13 +51,35 @@ jobs:
           script: |
             const envLabel = "${{ env.INPUT_USER_ENV }}";
             const prNumber = context.payload.pull_request.number;
-            console.log(`Adding label '${envLabel}' to PR #${prNumber}`);
+            const color = envLabel === 'CAE' ? '00ff00' : 'ff0000';  // Green for CAE, Red for PROD
+            console.log(`Adding label '${envLabel}' with color '${color}' to PR #${prNumber}`);
+            // Create or update the label with the correct color
+            await github.rest.issues.createLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: envLabel,
+              color: color
+            }).catch(async (error) => {
+              if (error.status === 422) {
+                // Label already exists, update the color
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: envLabel,
+                  color: color
+                });
+              } else {
+                throw error;
+              }
+            });
+            // Add the label to the PR
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
               labels: [envLabel]
             });
+
 
 
     #   - name: Check for all Files Changes
