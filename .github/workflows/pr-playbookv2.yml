@@ -2,7 +2,7 @@ name: pr-input_tower
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [closed]
 
   workflow_dispatch:
     inputs:
@@ -41,23 +41,6 @@ jobs:
           echo "This is the 2nd configured user: $USER_API"
           echo "This is the branch ${{ env.PR_BRANCH }}"
           echo "This is the environment: $INPUT_USER_ENV"
-
-      # This step adds a label to the PR based on the 'INPUT_USER_ENV' value
-      - name: Add label to PR
-        if: ${{ env.INPUT_USER_ENV != '' }}
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const envLabel = "${{ env.INPUT_USER_ENV }}";
-            const prNumber = context.payload.pull_request.number;
-            console.log(`Adding label '${envLabel}' to PR #${prNumber}`);
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              labels: [envLabel]
-            });
 
 
     #   - name: Check for all Files Changes
