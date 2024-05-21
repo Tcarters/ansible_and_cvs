@@ -1,0 +1,118 @@
+name: trigger-template
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  pull_request:
+    branches: [ "master" ]
+    types: [opened, edited, reopened]
+
+  workflow_dispatch:
+    inputs:
+        tower:
+            description: 'Tower AE | PROD'
+            type: choice
+            options:
+                - AE
+                - PROD
+        
+        PR_branch:
+            description: 'Branch targeted by the PR'
+            default: 'master'
+            required: true
+            type: string
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+
+jobs:
+
+  trigger-template:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.tower }}
+    env:
+        INPUT_USER_ENV: ${{ github.event.inputs.tower }}
+        PR_BRANCH: ${{ github.event.inputs.PR_branch }}
+        USER_API: ${{ vars.USER_API}}
+    # ${{ fromJSON('["self-hosted","Linux","X64"]' || '["self-hosted","Linux","ephemeral"]') }}
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      - name: Test Var in ENV
+        run: | 
+            echo "This is the configured user ${{ env.USER_API }}"
+
+    #   - name: Check for all Files Changes
+    #     run: |
+    #         git fetch
+    #         echo 'executing git diff'
+    #         git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs
+    #         files_changed=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
+           
+    #         echo -e "\n Files Changed: $files_changed"
+      
+    #   - name: Check for only CSV Files Changes
+    #     run: |
+    #       echo 'Executing git diff to find changes...'
+    #       git fetch --depth=1
+    #       CSV_FILES_CHANGED=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep 'ipgroups/.*\.csv')
+    #       echo "CSV Files Changed in ipgroups folder:"
+    #       echo "$CSV_FILES_CHANGED"
+       
+    #   - name: Check for Changes in one cvs Files
+    #     id: status_changed
+    #     shell: bash
+    #     run: |
+            
+    #         if [[ $(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} sample_ip.csv) ]]; then
+    #             echo "Changes detected in sample_ip.csv"
+    #             echo "file_changed=true" >> $GITHUB_OUTPUT
+    #         else
+    #           echo "No changes detected in sample_ip.csv"
+    #           echo "file_changed=false" >> $GITHUB_OUTPUT
+    #         fi
+
+  #     - name: Generate Address group from csv file
+  #       if: ${{ steps.status_changed.outputs.file_changed }} == 'true'
+  #       run: |
+  
+  #           python --version    
+  #           python3 ./convert_cvs_to_yaml.py
+  #           echo -e '>>>>> new group Address: \n'
+  #           cat ./groups.yaml
+            
+  #     - name:  create new PR for Validation
+  #       if: steps.status_changed.outputs.file_changed == 'true'
+  #       env:
+  #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       run: |
+  
+  #         echo "Changes detected, preparing to update branch."
+  #         git config user.name "secops-ipgroup-management"
+  #         git config user.email "your-email@example.com"
+
+  #         git fetch origin
+  #         git checkout -B botFMG origin/botFMG || git checkout -b botFMG
+  #         git reset --hard ${{ github.event.pull_request.head.sha }}
+  #         git push -f origin botFMG
+
+
+  # tests_on_tower:
+  #   needs: trigger-template
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #       - name: Checkout user branch
+  #         uses: actions/checkout@v4
+  #         with:
+  #           ref: 'botFMG'
+                  
+  #       - name: Run security tests
+  #         run: |
+  #               # Add commands to run your security tests here
+  #               echo "Running security tests..."
+  #               ls -lhR
+  #               # cat ./groups.yaml
