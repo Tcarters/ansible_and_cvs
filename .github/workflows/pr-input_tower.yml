@@ -3,7 +3,7 @@ name: pr-input_tower
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   pull_request:
-    branches: [ "master" ]
+    # branches: [ "master" ]
     types: [opened, edited, reopened]
 
   workflow_dispatch:
@@ -46,9 +46,9 @@ jobs:
 
       - name: Test Var in ENV
         run: | 
-            echo "This is the configured user ${{ env.USER_API }}"
-            echo "This is the 2nd configured user $USER_API_VARS"
-            echo "This is the branch ${{ env.PR_BRANCH }}"
+            echo "This is the configured user: ${{ env.USER_API }}"
+            echo "This is the 2nd configured user: $USER_API_VARS"
+            echo "This is the branch: ${{ env.PR_BRANCH }}"
 
     #   - name: Check for all Files Changes
     #     run: |
