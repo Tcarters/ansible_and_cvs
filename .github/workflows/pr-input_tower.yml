@@ -86,6 +86,12 @@ jobs:
             echo "Running the script"
             python3 ./scripts/clean-csvFiles.py ./ipgroups/data/data.csv
         continue-on-error: true
+      
+      - name: Check on failures
+        if: steps.execute_script.outcome != 'success'
+        run: |
+            echo "Outcome is ${{ steps.execute_script.outcome }} "
+            echo "conclusion is ${{ steps.execute_script.conclusion }} "
 
       - name: Set Result Message
         id: set_message
