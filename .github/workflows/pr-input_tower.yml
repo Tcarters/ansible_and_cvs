@@ -79,7 +79,22 @@ jobs:
               issue_number: prNumber,
               labels: [envLabel]
             });
+      
+      - name: Execute a script
+        id: execute_script
+        run: |
+            echo "Running the script"
+            python3 ./scripts/clean-csvFiles.py ./ipgroups/data/data.csv
+        continue-on-error: true
 
+      - name: Set Result Message
+        id: set_message
+        run: |
+          if [ ${{ steps.execute_script.outcome }} == 'success' ]; then
+            echo "::set-output name=message::Script execution succeeded at commit ${{ github.sha }}"
+          else
+            echo "::set-output name=message::Script execution failed with error: ${{ steps.execute_script.conclusion }}"
+          fi
 
 
     #   - name: Check for all Files Changes
