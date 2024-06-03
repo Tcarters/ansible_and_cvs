@@ -85,6 +85,14 @@ jobs:
         run: |
             echo "Running the script"
             python3 ./scripts/clean-csvFiles.py ./ipgroups/data/data.csv
+            status=$?
+            
+            # Check the exit status
+            if [ $status -eq 0 ]; then
+              echo "Python script executed successfully."
+            else
+              echo "Python script failed with exit status $status."
+            fi
         continue-on-error: true
       
       - name: Check on failures
