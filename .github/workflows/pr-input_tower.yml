@@ -50,42 +50,35 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const envLabel = "${{ env.INPUT_USER_ENV }}";
-            const prNumber = context.payload.pull_request ? context.payload.pull_request.number : null;
-            if (prNumber) {
-              const color = envLabel === 'CAE' ? '00ff00' : 'ff0000';  // Green for CAE, Red for PROD
-              console.log(`Adding label '${envLabel}' with color '${color}' to PR #${prNumber}`);
-              // Create or update the label with the correct color
-              try {
-                await github.rest.issues.createLabel({
+            const prNumber = context.payload.pull_request.number;
+            const color = envLabel === 'CAE' ? '00ff00' : 'ff0000';  // Green for CAE, Red for PROD
+            console.log(`Adding label '${envLabel}' with color '${color}' to PR #${prNumber}`);
+            // Create or update the label with the correct color
+            await github.rest.issues.createLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: envLabel,
+              color: color
+            }).catch(async (error) => {
+              if (error.status === 422) {
+                // Label already exists, update the color
+                await github.rest.issues.updateLabel({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   name: envLabel,
                   color: color
                 });
-              } catch (error) {
-                if (error.status === 422) {
-                  // Label already exists, update the color
-                  await github.rest.issues.updateLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: envLabel,
-                    color: color
-                  });
-                } else {
-                  throw error;
-                }
+              } else {
+                throw error;
               }
-              // Add the label to the PR
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: [envLabel]
-              });
-            } else {
-              console.log('Pull request number is not defined.');
-            }
-
+            });
+            // Add the label to the PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: [envLabel]
+            });
 
 
 
