@@ -85,15 +85,29 @@ jobs:
         run: |
             echo "Running the script"
             python3 ./scripts/clean-csvFiles.py ./ipgroups/data/data.csv
+            status=$?
+            
+            # Check the exit status
+            if [ $status -eq 0 ]; then
+              echo "Python script executed successfully."
+            else
+              echo "Python script failed with exit status $status."
+            fi
         continue-on-error: true
+      
+      - name: Check on failures
+        # if: steps.execute_script.outcome != 'success'
+        run: |
+            echo "Outcome is ${{ steps.execute_script.outcome }} "
+            echo "conclusion is ${{ steps.execute_script.conclusion }} "
 
       - name: Set Result Message
         id: set_message
         run: |
           if [ ${{ steps.execute_script.outcome }} == 'success' ]; then
-            echo "::set-output name=message::Script execution succeeded at commit ${{ github.sha }}"
+            echo "Script execution succeeded at commit ${{ github.sha }}"
           else
-            echo "::set-output name=message::Script execution failed with error: ${{ steps.execute_script.conclusion }}"
+            echo "Script execution failed with error: ${{ steps.execute_script.conclusion }}"
           fi
 
 

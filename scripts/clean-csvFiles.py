@@ -56,3 +56,4 @@ try:
     print("CSV file is valid")
 except ValueError as e:
     print("Error: {}".format(e))
+    sys.exit(1)
